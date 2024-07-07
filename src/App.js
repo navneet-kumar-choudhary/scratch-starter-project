@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import MidArea from "./components/MidArea";
 import PreviewArea from "./components/PreviewArea";
+// import "./index.css";
 
 export default function App() {
   const [position, setPosition] = useState({ x: 100, y: 100 });
@@ -14,6 +15,7 @@ export default function App() {
   const [moveHistory, setMoveHistory] = useState([]);
   const [text, setText] = useState(null);
   const [show, setShow] = useState(true);
+  const [droppedItems, setDroppedItems] = useState([]);
 
   const moveCat = () => {
     setPosition((prevPosition) => {
@@ -50,11 +52,15 @@ export default function App() {
 
   const goToRandomPosition = () => {
     setIsGlide(false);
-    const previewAreaWidth = window.innerWidth / 3;
-    const previewAreaHeight = window.innerHeight;
 
-    const randomX = Math.random() * (previewAreaWidth - 100);
-    const randomY = Math.random() * (previewAreaHeight - 100);
+    const previewArea = previewAreaRef.current;
+    const previewAreaRect = previewArea.getBoundingClientRect();
+
+    const maxWidth = previewAreaRect.width - 100;
+    const maxHeight = previewAreaRect.height - 100;
+
+    const randomX = Math.random() * maxWidth;
+    const randomY = Math.random() * maxHeight;
 
     const newPosition = { x: randomX, y: randomY };
     setPosition(newPosition);
@@ -82,7 +88,8 @@ export default function App() {
     ]);
   };
 
-  const handlePointInDirection = (direction) => {
+  const handlePointInDirection = () => {
+    const direction = 0;
     setRotation(direction);
     setMoveHistory((prevHistory) => [
       ...prevHistory,
@@ -90,13 +97,26 @@ export default function App() {
     ]);
   };
 
-  const handleClick = (text) => {
+  const handleClickHello = (text) => {
     setPopoverVisible(true);
-    setText(text);
+    setText("Hello");
   };
-  const handleClickfor2sec = (text) => {
+  const handleClickHmm = (text) => {
     setPopoverVisible(true);
-    setText(text);
+    setText("Hmm...");
+  };
+
+  const handleClickHellofor2sec = (text) => {
+    setPopoverVisible(true);
+    setText("Hello");
+    setTimeout(() => {
+      setPopoverVisible(false);
+      setText("");
+    }, 2000);
+  };
+  const handleClickHmmfor2sec = (text) => {
+    setPopoverVisible(true);
+    setText("Hmm...");
     setTimeout(() => {
       setPopoverVisible(false);
       setText("");
@@ -109,22 +129,60 @@ export default function App() {
         if (move.type === "move" || move.type === "glide") {
           setPosition(move.position);
         } else if (move.type === "rotate") {
+          handlePointInDirection();
           setRotation(move.rotation);
         }
-      }, index * 1000); // Adjust timing as needed
+      }, index * 1000);
     });
   };
 
   const showCharacter = () => {
     setShow(true);
   };
+
   const hideCharacter = () => {
     setShow(false);
   };
 
+  // const handleDrop = (item) => {
+  //   const parsedItem = JSON.parse(item);
+  //   setDroppedItems((prevItems) => [...prevItems, parsedItem]);
+  // };
+  // const handleExecute = (onClick) => {
+  //   if (typeof onClick === "function") {
+  //     onClick();
+  //   }
+  // };
+  const handleDrop = (item) => {
+    const parsedItem = JSON.parse(item);
+    setDroppedItems((prevItems) => [...prevItems, parsedItem]);
+  };
+
+  const actionMap = {
+    moveCat,
+    rotateCatCounterclockwise,
+    rotateCat,
+    goToRandomPosition,
+    glideToRandomPosition,
+    handlePointInDirection,
+    replayMoves,
+    showCharacter,
+    hideCharacter,
+    handleClickHello,
+    handleClickHellofor2sec,
+    handleClickHmm,
+    handleClickHmmfor2sec,
+  };
+
+  const handleExecute = (action) => {
+    if (actionMap[action]) {
+      actionMap[action]();
+    }
+  };
+
   return (
     <div className="bg-blue-100 pt-6 font-sans">
-      <div className="h-screen overflow-hidden flex flex-row  ">
+      <div className="h-screen overflow-hidden flex flex-row">
         <div className="flex-1 h-screen overflow-hidden flex flex-row bg-white border-t border-r border-gray-200 rounded-tr-xl mr-2">
           <Sidebar
             moveCat={moveCat}
@@ -133,15 +191,28 @@ export default function App() {
             goToRandomPosition={goToRandomPosition}
             glideToRandomPosition={glideToRandomPosition}
             pointInDirection={handlePointInDirection}
-            handleClick={handleClick}
+            // handleClick={handleClick}
+            handleClickHello={handleClickHello}
+            handleClickHmm={handleClickHmm}
+            handleClickHellofor2sec={handleClickHellofor2sec}
+            handleClickHmmfor2sec={handleClickHmmfor2sec}
             replayMoves={replayMoves}
             showCharacter={showCharacter}
             hideCharacter={hideCharacter}
-            handleClickfor2sec={handleClickfor2sec}
+            // handleClickfor2sec={handleClickfor2sec}
+            onDrop={handleDrop}
+            handleExecute={handleExecute}
           />
-          <MidArea />
+          <MidArea
+            droppedItems={droppedItems}
+            onDrop={handleDrop}
+            handleExecute={handleExecute}
+          />
         </div>
-        <div className="w-1/3 h-screen overflow-hidden flex flex-row bg-white border-t border-l border-gray-200 rounded-tl-xl ml-2">
+        <div
+          className="w-1/3 h-screen overflow-hidden flex flex-row bg-white border-t border-l border-gray-200 rounded-tl-xl ml-2 preview-area"
+          ref={previewAreaRef}
+        >
           {show ? (
             <PreviewArea
               position={position}
