@@ -125,6 +125,7 @@ export default function App() {
 
   const replayMoves = () => {
     moveHistory.forEach((move, index) => {
+      handlePointInDirection();
       setTimeout(() => {
         if (move.type === "move" || move.type === "glide") {
           setPosition(move.position);

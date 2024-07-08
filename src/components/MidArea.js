@@ -26,6 +26,14 @@ export default function MidArea({ droppedItems, onDrop, handleExecute }) {
     handleClickHmmfor2sec: () => handleExecute("handleClickHmmfor2sec"),
   };
 
+  const executeAllDroppedItems = () => {
+    droppedItems.forEach((item) => {
+      if (actionMap[item.action]) {
+        actionMap[item.action]();
+      }
+    });
+  };
+
   return (
     <div
       className="flex-1 h-full overflow-auto"
@@ -34,6 +42,18 @@ export default function MidArea({ droppedItems, onDrop, handleExecute }) {
     >
       {/* <div>{"Mid Area"}</div> */}
       <div className="w-1/3 p-2">
+        {
+          <button
+            className={`bg-green-500 text-white px-4 py-2 ${
+              droppedItems.length > 0 ? "opacity-0" : "opacity-100"
+            }rounded`}
+            onClick={() =>
+              droppedItems.length > 0 ? executeAllDroppedItems() : {}
+            }
+          >
+            Execute All
+          </button>
+        }
         <ul>
           {droppedItems.map((item, index) => (
             <li
